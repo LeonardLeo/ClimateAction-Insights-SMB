@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from dowhy import CausalModel
 
 # =============================================================================
 # Defining Functions
@@ -124,3 +125,49 @@ def data_preprocessing_pipeline(dataset: pd.DataFrame,
         dataset = dataset.drop(drop_columns, axis = 1)
 
     return dataset
+
+def run_causal_inference(df, treatment, outcome, controls):
+    print("="*80)
+    print(f"🔍 Testing causal effect of {treatment.upper()} → {outcome.upper()}")
+    
+    model = CausalModel(
+        data=df,
+        treatment=treatment,
+        outcome=outcome,
+        common_causes=controls
+    )
+    
+    identified_estimand = model.identify_effect()
+    print("\n🧠 Identified Estimand:")
+    print(identified_estimand)
+
+    estimate = model.estimate_effect(
+        identified_estimand,
+        method_name="backdoor.linear_regression"
+    )
+    
+    print("\n📊 Estimated Causal Effect:")
+    print(f"{treatment} → {outcome} = {estimate.value:.4f}")
+    
+    # Interpretation
+    if estimate.value > 0:
+        relation = "increases"
+    elif estimate.value < 0:
+        relation = "decreases"
+    else:
+        relation = "has no clear effect on"
+
+    print(f"\n✅ Interpretation: Increasing {treatment} appears to {relation} {outcome}, on average, when controlling for:")
+    print(", ".join(controls))
+    
+    # Optional: Refute estimate
+    try:
+        refute = model.refute_estimate(
+            identified_estimand,
+            estimate,
+            method_name="random_common_cause"
+        )
+        print("\n🧪 Refutation Test (Random Common Cause):")
+        print(refute)
+    except Exception as e:
+        print("⚠️ Refutation test failed:", e)
