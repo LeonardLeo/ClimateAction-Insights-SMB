@@ -1,3 +1,9 @@
+- Exploring Insight-Driven Motivation for SMB Climate Action -
+🧭 Objective
+
+Using the provided dataset containing company firmographics, financials, emissions, and profitable initiative (actions the company can take) recommendations, your goal is to uncover a viable **path from data to insight that nudges real-world behaviour: motivating an individual SMB (specifically a small- or medium-sized business, not a large enterprise) to take climate action**.
+You’ll be working under similar constraints to what you'd encounter at an early-stage startup: limited time, high ambiguity, and a need for directionally strong signal — fast.
+
 # 1) ---> Data Feature Description:
     <class 'pandas.core.frame.DataFrame'>
     RangeIndex: 580705 entries, 0 to 580704
@@ -28,4 +34,41 @@
     - Data Quality Checks
     - Handling Missing Values if Any
     - Handling Correlation in Variables
-    - 
+    - Removing Irrelavant Features if Any
+    - Checking for Duplicates (DROP IF ANY)
+    - Checking for Consistency in Data
+    - Renaming Columns and Headers for Better Explanability
+    - Fix Skewed Features in Dataset
+    - Handling Categorical Features
+    - Data Entry Checks
+    - Check for Outliers
+    
+    
+    No null values in the dataset across the rows and columns.
+    No duplicates found in the dataset.
+    
+# 3) ---> Analysis:
+    - Correlation between EMPLOYEES and EMISSIONS_t_CO2e
+    - Correlation between TURNOVER and EMPLOYEES (Is there a case for pushing an increase or increase in employees)
+    - Correlation between TURNOVER and EMISSIONS_t_CO2e. Why this matters for SMB Climate Action:
+            1) If bigger revenue = more emissions: Incentivize cleaner growth models.
+            2) If no pattern: Climate action strategies must be industry-specific, not just based on size.
+            3) If high earners emit less: Share best practices — make decarbonization aspirational and profitable.
+      Some important caveats to this analysis:
+            1) Correlation ≠ Causation - It doesn't prove that turnover causes emissions or vice versa.
+            2) Industry Context Matters - Manufacturing, logistics, and energy sectors naturally emit more CO₂ than software or consulting — regardless of revenue.
+            3) Check for Outliers - A few very large firms can skew correlation — consider using log-transformed data.
+    - Causal Inference between EMPLOYEES and EMISSIONS_t_CO2e.
+            This answers: “Are companies with more employees really polluting more, or is that just because they're richer?”
+    - Causal Inference between TURNOVER and EMPLOYEES.
+            This answers: 
+    - Causal Inference between TURNOVER and EMISSIONS_t_CO2e. 
+            This answers: “What would emissions be if turnover were hypothetically changed (intervened on)?”
+            This answers: “If SMBs grow financially, do emissions grow linearly — or can clean growth be incentivized?”
+    - Will any of these analysis change if we switched the analysis to specific groupings
+              EXAMPLE: Industry, Sector, Geography.
+ 
+
+
+
+    

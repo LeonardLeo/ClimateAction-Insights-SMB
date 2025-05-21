@@ -30,6 +30,7 @@ warnings.filterwarnings("ignore")
 
 # ---> Load Parquet Dataset
 dataset = pd.read_parquet("data/company_initiatives.parquet")
+columns = dataset.columns
 
 # =============================================================================
 # Exploratory Data Analysis
