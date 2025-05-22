@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 21 16:36:45 2025
-
-@author: leona
-"""
-
 # =============================================================================
 # Import Libraries
 # =============================================================================
@@ -36,13 +29,8 @@ warnings.filterwarnings("ignore")
 # Get Dataset 
 # =============================================================================
 # ---> Load Parquet Dataset
-data = pd.read_parquet("../../data/preprocessed_data/clean_data.parquet")
-dataset = pd.read_parquet("../../data/preprocessed_data/clean_data.parquet")
-
-data_1 = pd.read_parquet("../../data/preprocessed_data/clean_data_without_log_transform.parquet")
-dataset_1 = pd.read_parquet("../../data/preprocessed_data/clean_data_without_log_transform.parquet")
-
-columns = dataset.columns
+data = pd.read_parquet("../../data/preprocessed_data/clean_data_encoded_and_log_transformed.parquet")
+columns = data.columns
 
 # =============================================================================
 # Build Model
@@ -66,9 +54,9 @@ regression_models = {
 results = {}
 for name, model in regression_models.items():
     print(f"\n🧪 Running: {name}")
-    each_model = run_regression_model(dataframe = dataset_1,
-                                      X = dataset.drop("initiative_carbon_savings_t_CO2e_log1p", axis = 1),
-                                      y = dataset.initiative_carbon_savings_t_CO2e_log1p,
+    each_model = run_regression_model(dataframe = data,
+                                      X = data.drop("initiative_carbon_savings_t_CO2e_log1p", axis = 1),
+                                      y = data.initiative_carbon_savings_t_CO2e_log1p,
                                       # already_logged_y = True,
                                       # log_y = False,
                                       cv_folds = 10,

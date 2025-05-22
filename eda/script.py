@@ -44,12 +44,18 @@ EDA = eda_x(data)
 # Preprocessing Data
 # =============================================================================
 # ---> Dropping Irrelevant Features
+model_data = data.drop(["initiative_id",
+                        "company_id",
+                        "geography_id",
+                        "sector_code",
+                        "initiative_name"], axis = 1)
+
 company_data_processed = data.drop(["initiative_operation_difficulty",
                                     "initiative_implementation_difficulty",
                                     "initiative_id",
                                     "geography_id",
                                     "sector_code",
-                                    "initiative_name",], axis = 1)
+                                    "initiative_name"], axis = 1)
 
 # Grouping and aggregating
 group_cols = [
@@ -79,10 +85,21 @@ company_data_processed = (
 processed_data = company_data_processed.drop("company_id", axis = 1)                                                    
 # Dropping Sector_Name as industry will be used to provide context for where the SMB's belong
 processed_data = processed_data.drop("sector_name", axis = 1) 
+model_data = model_data.drop("sector_name", axis = 1) 
 
 # =============================================================================
 # EDA - Check Processed Data
 # =============================================================================
+EDA_model_data = eda_x(model_data, 
+                        graphs = True,
+                        barchart_figsize = (15, 10),
+                        max_categories = 15,
+                        pairplot = False,  # 👈 turn this off for large datasets
+                        drop_columns = None,
+                        save_graphs = True,
+                        corr_method = "spearman",
+                        save_path = "eda_model_data")
+
 EDA_processed_data = eda_x(processed_data, 
                            graphs = True,
                            barchart_figsize = (15, 10),
@@ -96,6 +113,9 @@ EDA_processed_data = eda_x(processed_data,
 # =============================================================================
 # Data Cleaning Round-Up after EDA
 # =============================================================================
+# 4899 duplicates found after preprocessing model_data
+model_data = model_data.drop_duplicates()
+
 # 122 duplicates found after data preprocessing.
 processed_data = processed_data.drop_duplicates()
 
@@ -104,16 +124,32 @@ processed_data = processed_data.drop_duplicates()
 columns_to_encode = [
     'industry_name', 
     'geography_name', 
+    'initiative_categories',
 ]
 
 encoded_data = one_hot_encode_with_rare_grouping(
-    processed_data,
+    model_data,
     columns=columns_to_encode,
     threshold=0.01,       # Group categories < 1% as 'Other'
     drop_first=True       # Drop first to avoid dummy variable trap
 )
 
-# 5 duplicates found after encoding. Drop all duplicates
+# Encoding Ordinal Features
+difficulty_mapping = {
+    'Negligible': 1,
+    'Minimal': 2,
+    'Minor': 3,
+    'Moderate': 4,
+    'Significant': 5,
+    'Substantial': 6,
+    'Extreme': 7
+}
+encoded_data['initiative_implementation_difficulty_mapped'] = encoded_data['initiative_implementation_difficulty'].map(difficulty_mapping)
+encoded_data = encoded_data.drop("initiative_implementation_difficulty", axis = 1)
+encoded_data['initiative_operation_difficulty_mapped'] = encoded_data['initiative_operation_difficulty'].map(difficulty_mapping)
+encoded_data = encoded_data.drop("initiative_operation_difficulty", axis = 1)
+
+# Drop all duplicates
 encoded_data = encoded_data.drop_duplicates()
 
 # ---> Intoduce Logarithm to Skewed Columns
@@ -123,11 +159,9 @@ clean_data, _ = safe_log1p_transform(df = encoded_data,
                                      columns = ["turnover",
                                                 "emissions_t_CO2e",
                                                 "employees",
-                                                "total_initiative_capex_GBP",
-                                                "total_initiative_carbon_savings_t_CO2e",
-                                                "total_initiative_financial_savings_GBP",
-                                                "distinct_initiative_categories",
-                                                "total_initiatives"])
+                                                "initiative_capex_GBP",
+                                                "initiative_carbon_savings_t_CO2e",
+                                                "initiative_financial_savings_GBP"])
 
 # 101 duplicates found after data preprocessing. Drop all duplicates
 clean_data = clean_data.drop_duplicates()
@@ -199,6 +233,9 @@ with open("correlation_summary/correlation_preprocessed_data_summary_report.txt"
 # =============================================================================
 # Save Preprocessed Dataset
 # =============================================================================
+model_data.to_csv("../data/preprocessed_data/unprocessed_model_data.csv", index = False)
+model_data.to_parquet("../data/preprocessed_data/unprocessed_model_data.parquet", index = False)
+
 processed_data.to_csv("../data/preprocessed_data/clean_data_not_encoded_and_not_log_transformed.csv", index = False)
 processed_data.to_parquet("../data/preprocessed_data/clean_data_not_encoded_and_not_log_transformed.parquet", index = False)
 
