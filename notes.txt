@@ -1,6 +1,13 @@
 - Exploring Insight-Driven Motivation for SMB Climate Action -
 - Objective
 
+
+
+DASHBOARD LINK: https://app.powerbi.com/view?r=eyJrIjoiZGYxMThkYmEtOWY4NS00NWEyLWJjM2EtM2NhN2Y1YzJjZDNlIiwidCI6IjY2NjYxMWFjLTE1NjktNDhjYy1iYjg5LWY2MjZkY2JmMjkxMSJ9&embedImagePlaceholder=true&pageName=0de1aa8aaa5d2237e1bb
+
+
+
+
 Using the provided dataset containing company firmographics, financials, emissions, and profitable initiative (actions the company can take) recommendations, your goal is to uncover a viable **path from data to insight that nudges real-world behaviour: motivating an individual SMB (specifically a small- or medium-sized business, not a large enterprise) to take climate action**.
 You'll be working under similar constraints to what you'd encounter at an early-stage startup: limited time, high ambiguity, and a need for directionally strong signal fast.
 
