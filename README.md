@@ -10,22 +10,33 @@
 ---
 
 ## 📁 Project Structure
-├── data/ # Raw and preprocessed data files
-├── eda/ # Exploratory Data Analysis
-│ ├── correlation_summary/ # Correlation matrices and insights
-│ ├── eda_clean_data/ # Cleaned datasets
-│ ├── eda_encoded_data/ # Encoded versions of datasets
-│ ├── eda_model_data/ # Final datasets used in modeling
-│ ├── eda_processed_data/ # Intermediate processing
-│ └── eda_viz/ # EDA visualizations
-├── predictive_modeling/ # Regression models for prediction
-│ ├── Predicting_Initiative_Carbon_Savings_t_CO2e/
-│ └── Predicting_Initiative_Financial_Savings/
-├── smb_data_analysis/ # Data exploration and preparation for dashboard
-├── dashboard.pbix # Power BI dashboard file
-├── utils.py # Utility functions
-├── notes.txt # Research notes and scratchpad
-├── README.md # Project documentation
+
+```text
+ClimateAction-Insights-SMB/
+├── data/                            # Raw and preprocessed data files
+│   ├── company_initiatives.parquet
+│   └── deidentified_company_initiatives.xlsx
+│
+├── eda/                             # Exploratory Data Analysis
+│   ├── correlation_summary/         # Correlation matrices and insights
+│   ├── eda_clean_data/              # Cleaned datasets
+│   ├── eda_encoded_data/            # Encoded versions of datasets
+│   ├── eda_model_data/              # Final datasets used in modeling
+│   ├── eda_processed_data/          # Intermediate processing
+│   └── eda_viz/                     # EDA visualizations
+│
+├── predictive_modeling/            # Regression models for prediction
+│   ├── Predicting_Initiative_Carbon_Savings_t_CO2e/
+│   │   └── results/                 # Models and results
+│   └── Predicting_Initiative_Financial_Savings/
+│       └── results/                 # Models and results
+│
+├── smb_data_analysis/              # Data prep for dashboard
+├── dashboard.pbix                  # Power BI dashboard file
+├── utils.py                        # Utility functions
+├── notes.txt                       # Research notes and scratchpad
+├── README.md                       # Project documentation
+```
 
 
 ---
