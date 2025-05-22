@@ -112,7 +112,7 @@ Exploratory Data Analysis (EDA) – Interpretation & Insights
 
 1. Data Quality and Consistency
 - Missing Values: No null values were identified across the dataset — indicating high data completeness and reliability.
-- Duplicates: No duplicate rows were found, ensuring the dataset does not suffer from redundancies that could distort modeling or aggregation.
+- Duplicates: No duplicate rows were found initially in the data, ensuring the dataset does not suffer from redundancies that could distort modeling or aggregation.
 - Data Entry Consistency: No invalid or inconsistent entries were detected (e.g., negative employee counts, mislabelled sectors), suggesting appropriate validation or pre-cleaning.
 
 2. Feature Engineering and Distributions
@@ -174,7 +174,13 @@ Key Takeaways for Stakeholders
     - Will any of these analysis change if we switched the analysis to specific groupings
               EXAMPLE: Industry, Sector, Geography.
  
-
+# 4) Final Analysis, Results, and Conclusions:
+    The dataset given was preprocessed for analysis and machine learning seperately. When preprocessing the data for data analysis, the goal was to create a dashboard where SMB's could go to and gain data-driven insights on various 
+industries or that specific to them and then be able to draw insights on the key metrics such as average emissions, total initiatives implemented in that industry, average financial savings from implemneting initiatives, as well as average carbon
+savings from implementing initiatives, etc.
+    
+    EDA:
+    1) Initial dataset was c
 
 
     
