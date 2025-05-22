@@ -77,5 +77,3 @@ for name, model in regression_models.items():
                                       log_feature_col = None)
     results[f"{name}"] = each_model
     
-    
-    

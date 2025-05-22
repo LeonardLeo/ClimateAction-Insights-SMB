@@ -267,13 +267,50 @@ savings from implementing initiatives, etc.
 37	initiative_financial_savings_GBP_log1p
         - SelectFPR was used for Feature Selection to reduce dimensionality of the data. 
         
-        - Model predicting the possible financial savings from implementing an initiative - Linear Regression model was used because of its simplicity yet
+        - Model predicting the possible financial savings from implementing an initiative - 35 features were selected to train the model. Linear Regression model was used because of its simplicity yet
         effectiveness in prediction. With r squared above 0.80 and with efficienct speed in prediction. All results saved. No over-fitting of the data as seen from 
         cross validation results.
-        
+
+	feature                                                                             Feature	Coefficient
+25	initiative_categories_Transportation sustainability                                 2.5865764306012875
+27	initiative_categories_Waste reduction	                                            1.0094257246965064
+24	initiative_categories_Sustainable policies and practices                          	0.8308164251864686
+26	initiative_categories_Travel sustainability	                                        0.7109234774294728
+32	employees_log1p	                                                                    0.4913044824045126
+22	initiative_categories_Fuel and energy conservation	                                0.34161822673502296
+23	initiative_categories_Infrastructure sustainability; Fuel and energy conservation	0.28422579690026867
+29	initiative_operation_difficulty_mapped	                                            0.22763572793703482
+9	industry_name_P: EDUCATION	                                                       -0.1445425868812512
+6	industry_name_M: PROFESSIONAL AND SCIENTIFIC AND TECHNICAL ACTIVITIES              -0.13660828790687854
+7	industry_name_N: ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES	                   -0.13043324925796135
+28	initiative_implementation_difficulty_mapped                                        -0.11293918871777123
+3	industry_name_I: ACCOMMODATION AND FOOD SERVICE ACTIVITIES                         -0.10985361730627057
+12	industry_name_S: OTHER SERVICE ACTIVITIES	                                       -0.09034993990948631
+10	industry_name_Q: HUMAN HEALTH AND SOCIAL WORK ACTIVITIES                           -0.08985339397758273
+30	turnover_log1p	                                                                    0.07845030419643702
+33	initiative_capex_GBP_log1p	                                                        0.07272770416387371
+4	industry_name_J: INFORMATION AND COMMUNICATION	                                   -0.06598680820311909
+31	emissions_t_CO2e_log1p	                                                            0.05969319335021393
+11	industry_name_R: ARTS AND ENTERTAINMENT AND RECREATION	                           -0.043965779943946674
+8	industry_name_Other	                                                                0.039992269392739165
+5	industry_name_L: REAL ESTATE ACTIVITIES	                                           -0.039754997633297685
+1	industry_name_G: WHOLESALE AND RETAIL TRADE; REPAIR OF MOTOR VEHICLES AND MOTORCYCLES	-0.03507465036312732
+2	industry_name_H: TRANSPORTATION AND STORAGE	                                        0.026597760982173257
+34	initiative_financial_savings_GBP_log1p	                                            0.015643687762348854
+18	geography_name_Other	                                                           -0.003730150180754496
+0	industry_name_F: CONSTRUCTION	                                                    0.0036353241135693728
+14	geography_name_City of London                                                      -0.003593854088549446
+19	geography_name_Southwark	                                                       -0.0035186112135985733
+15	geography_name_Islington	                                                       -0.0030625490007460733
+16	geography_name_Leeds	                                                           -0.0019312235269247
+17	geography_name_Manchester                                                      	   -0.001134655590913807
+13	geography_name_Camden	                                                           -0.0008130030941980639
+20	geography_name_Tower Hamlets	                                                    0.0006883134671783516
+
+    
         - Model predicting the possible carbon savings from implementing an initiative - 20 features were selected to train the model. Random Forest Regressor model was used due to its accuracy in prediction
         also having r squared above 0.80. Results were saved, however, this model is suject to more scrutiny as there were tracesof over-fitting in the model after
-        successfully carrying out cross validation on the dataset at 10 folds.
+        successfully carrying out cross validation on the dataset at 10 folds. Feature importance table can be seen below.
         
     Features                                                                                 Feature Importance
 19	initiative_carbon_savings_t_CO2e_log1p	                                                 0.3158192162255535
@@ -296,3 +333,7 @@ savings from implementing initiatives, etc.
 7	geography_name_Leeds	                                                                 1.809541765286262e-06
 6	industry_name_P: EDUCATION	                                                             2.4209931711333644e-08
 9	initiative_categories_Infrastructure sustainability; Fuel and energy conservation	     1.6055758206135647e-09
+    
+    
+    DATA ANALYSIS:
+    A dashboard was created in Power BI to help SMBs gain data-driven insights for making informed decisions on carbon reduction initiatives.
