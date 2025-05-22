@@ -180,7 +180,119 @@ industries or that specific to them and then be able to draw insights on the key
 savings from implementing initiatives, etc.
     
     EDA:
-    1) Initial dataset was c
-
-
+    1) Initial dataset was clean with no duplicates, missing values, or data entry issues found.
+    2) While eploring the data, we made some assumptions on certain variables:
+            - There is a correlation between number of employees and emissions CO2e
+            - There is a correlation between turnover and emissions CO2
+            - There is a correlation between total_initiative_carbon_savings_t_CO2e and total_initiative_financial_savings_GBP.
+    Initially conducting correlation tests on the dataset without any preprocessing leads to inaccurate results. This was largely due to the fact that alot of our features were highly skewed to the left and this had to be fixed.
+    A log-transformation was done on skewd features before correlation was done and this revealed positive correlations between:
+    - turnover and emissions CO2e (0.51)
+    - total_initiative_carbon_savings_t_CO2e and emissions CO2 (0.85)
+    - turnover and employees (0.6)
+    - turnover and total_initiative_carbon_savings_t_CO2e (0.56)
+    - turnover and total_initiative_financial_savings_GBP (0.64)
+    - turnover and total_initiative_capex_GDP (0.52)
+    - total_initiative_carbon_savings_t_CO2e and total_initiative_financial_savings_GBP (0.84)
+    - employees and total_initiative_carbon_savings_t_CO2e (0.53)
+    - employees and total_initiative_financial_savings_GBP (0.67)
+    - emissions CO2 and total_initiative_financial_savings_GBP (0.70)
+    - emissions CO2 and total_initiative_capex_GDP (0.71)
+    etc (Full list can be seen in grouped correlation summary) 
     
+    This correlation results provides insights on the following:
+    These correlations help to uncover the relationships between company-level characteristics and their decarbonization initiative outcomes. For instance, the moderate 
+    correlation between turnover and emissions (0.51) suggests that higher-revenue companies tend to emit more CO₂, likely due to their scale of operations. A strong 
+    positive correlation between total initiative carbon savings and emissions (0.85) indicates that firms with higher emissions also tend to achieve greater absolute 
+    carbon savings, possibly because they have more room for efficiency gains. The relationship between turnover and employees (0.60) reflects that larger firms 
+    typically have more staff. Additionally, turnover correlates moderately with carbon savings (0.56), financial savings (0.64), and capex (0.52)—suggesting that higher-revenue 
+    firms are generally investing more and saving more through initiatives.
+
+    Further, carbon savings and financial savings are strongly correlated (0.84), implying that initiatives with environmental benefits often yield cost savings as well. Similar 
+    moderate-to-strong relationships are observed between employees and both carbon savings (0.53) and financial savings (0.67), as well as between emissions and financial savings 
+    (0.70) or capex (0.71). These results collectively indicate that larger, higher-emitting firms tend to pursue larger-scale decarbonization projects that yield both 
+    environmental and financial benefits.
+
+    FURTHER EDA ANALYSIS:
+    Upon further inspection, more analysis was done on the extent of the correlation between the various variables to aid companies make better decisions. Another correlation analysis
+    was done on filtered subsets of the data. This filtering was done for each location and for each industry where we learn how these variables interact with each other in more granular
+    circumstances.
+    The results can be seen in the correlation_preprocessed_data_summary_report.txt file.
+    
+    
+    
+    DATA PREPROCESSING & MODELING:
+    Data modeling:
+        - Two models were created:
+                        1) Model predicting the possible financial savings from implementing an initiative
+                        2) Model predicting the possible carbon savings from implementing an initiative
+        - All columns serving as identifies were dropped. The following features were selected after data preprocessing.
+0	industry_name_F: CONSTRUCTION
+1	industry_name_G: WHOLESALE AND RETAIL TRADE; REPAIR OF MOTOR VEHICLES AND MOTORCYCLES
+2	industry_name_H: TRANSPORTATION AND STORAGE
+3	industry_name_I: ACCOMMODATION AND FOOD SERVICE ACTIVITIES
+4	industry_name_J: INFORMATION AND COMMUNICATION
+5	industry_name_L: REAL ESTATE ACTIVITIES
+6	industry_name_M: PROFESSIONAL AND SCIENTIFIC AND TECHNICAL ACTIVITIES
+7	industry_name_N: ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES
+8	industry_name_Other
+9	industry_name_P: EDUCATION
+10	industry_name_Q: HUMAN HEALTH AND SOCIAL WORK ACTIVITIES
+11	industry_name_R: ARTS AND ENTERTAINMENT AND RECREATION
+12	industry_name_S: OTHER SERVICE ACTIVITIES
+13	geography_name_Buckinghamshire
+14	geography_name_Camden
+15	geography_name_City of London
+16	geography_name_Islington
+17	geography_name_Leeds
+18	geography_name_Manchester
+19	geography_name_Other
+20	geography_name_Southwark
+21	geography_name_Tower Hamlets
+22	geography_name_Westminster
+23	initiative_categories_Fuel and energy conservation
+24	initiative_categories_Infrastructure sustainability; Fuel and energy conservation
+25	initiative_categories_Other
+26	initiative_categories_Sustainable policies and practices
+27	initiative_categories_Transportation sustainability
+28	initiative_categories_Travel sustainability
+29	initiative_categories_Waste reduction
+30	initiative_implementation_difficulty_mapped
+31	initiative_operation_difficulty_mapped
+32	turnover_log1p
+33	emissions_t_CO2e_log1p
+34	employees_log1p
+35	initiative_capex_GBP_log1p
+36	initiative_carbon_savings_t_CO2e_log1p
+37	initiative_financial_savings_GBP_log1p
+        - SelectFPR was used for Feature Selection to reduce dimensionality of the data. 
+        
+        - Model predicting the possible financial savings from implementing an initiative - Linear Regression model was used because of its simplicity yet
+        effectiveness in prediction. With r squared above 0.80 and with efficienct speed in prediction. All results saved. No over-fitting of the data as seen from 
+        cross validation results.
+        
+        - Model predicting the possible carbon savings from implementing an initiative - 20 features were selected to train the model. Random Forest Regressor model was used due to its accuracy in prediction
+        also having r squared above 0.80. Results were saved, however, this model is suject to more scrutiny as there were tracesof over-fitting in the model after
+        successfully carrying out cross validation on the dataset at 10 folds.
+        
+    Features                                                                                 Feature Importance
+19	initiative_carbon_savings_t_CO2e_log1p	                                                 0.3158192162255535
+18	initiative_capex_GBP_log1p	                                                             0.2052908621626833
+17	employees_log1p	                                                                         0.13105190525201532
+16	emissions_t_CO2e_log1p	                                                                 0.11060371394826606
+13	initiative_implementation_difficulty_mapped                                              0.08022441218577527
+15	turnover_log1p                                                                   	     0.07143812301990037
+14	initiative_operation_difficulty_mapped	                                                 0.06455585281141821
+2	industry_name_H: TRANSPORTATION AND STORAGE	                                             0.008335565669493828
+8	initiative_categories_Fuel and energy conservation                                       0.007997105317882575
+11	initiative_categories_Transportation sustainability	                                     0.0028439966120139613
+12	initiative_categories_Travel sustainability	                                             0.0008575755674611275
+0	industry_name_F: CONSTRUCTION	                                                         0.0004988372471616737
+1	industry_name_G: WHOLESALE AND RETAIL TRADE; REPAIR OF MOTOR VEHICLES AND MOTORCYCLES    0.00015135347651605447
+4	industry_name_N: ADMINISTRATIVE AND SUPPORT SERVICE ACTIVITIES	                         0.00013875242696113332
+10	initiative_categories_Sustainable policies and practices	                             7.664285269600319e-05
+3	industry_name_I: ACCOMMODATION AND FOOD SERVICE ACTIVITIES	                             5.937182040013437e-05
+5	industry_name_Other	                                                                     5.4878046528567036e-05
+7	geography_name_Leeds	                                                                 1.809541765286262e-06
+6	industry_name_P: EDUCATION	                                                             2.4209931711333644e-08
+9	initiative_categories_Infrastructure sustainability; Fuel and energy conservation	     1.6055758206135647e-09
