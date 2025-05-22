@@ -13,9 +13,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from dowhy import CausalModel
-import joblib  # For saving the dictionary as a pickle
+import pickle, joblib  # For saving the dictionary as a pickle
 from typing import List, Dict, Optional
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, cross_val_score, KFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.feature_selection import f_regression, SelectFpr, SelectKBest
+from sklearn.pipeline import make_pipeline
 
 # =============================================================================
 # Defining Functions
@@ -229,6 +234,7 @@ def eda(dataset: pd.DataFrame,
 
 def eda_x(dataset: pd.DataFrame,
         bin_size: int or list = None,
+        corr_method: str = "pearson",
         graphs: bool = False,
         pairplot: bool = False,  # New parameter
         max_categories: int = 20,  # You can parameterize this if you like
@@ -262,7 +268,7 @@ def eda_x(dataset: pd.DataFrame,
         data_mode = dataset.mode().iloc[0]
         data_descriptive_stats = dataset.describe()
         data_more_descriptive_stats = dataset.describe(include="all")
-        data_correlation_matrix = filtered_dataset.corr(numeric_only=True)
+        data_correlation_matrix = filtered_dataset.corr(numeric_only=True, method = corr_method)
         data_distinct_count = dataset.nunique()
         data_count_duplicates = dataset.duplicated().sum()
         data_duplicates = dataset[dataset.duplicated()]
@@ -441,48 +447,233 @@ def data_preprocessing_pipeline(dataset: pd.DataFrame,
 
     return dataset
 
-def run_causal_inference(df, treatment, outcome, controls):
-    print("="*80)
-    print(f"🔍 Testing causal effect of {treatment.upper()} → {outcome.upper()}")
-    
-    model = CausalModel(
-        data=df,
-        treatment=treatment,
-        outcome=outcome,
-        common_causes=controls
-    )
-    
-    identified_estimand = model.identify_effect()
-    print("\n🧠 Identified Estimand:")
-    print(identified_estimand)
+def run_regression_model(
+    dataframe,
+    X,
+    y,
+    model=None,
+    model_name="Custom Model",
+    test_size=0.2,
+    standardize=False,
+    log_y=False,
+    log_feature_col=None,
+    already_logged_y=False,
+    cv_folds=5,
+    random_state=42,
+    plot=True,
+    export_path=None,
+    prediction_csv_path=None,
+    return_metrics=False,
+    remove_irrelevant_features=False,
+    fpr_threshold=0.05,
+    fallback_k=10,
+    use_selectkbest=False,
+    drop_columns_after_log=True,
+    log_suffix="_log1p"
+):
+    log_feature_col = log_feature_col or []
 
-    estimate = model.estimate_effect(
-        identified_estimand,
-        method_name="backdoor.linear_regression"
-    )
-    
-    print("\n📊 Estimated Causal Effect:")
-    print(f"{treatment} → {outcome} = {estimate.value:.4f}")
-    
-    # Interpretation
-    if estimate.value > 0:
-        relation = "increases"
-    elif estimate.value < 0:
-        relation = "decreases"
+    if isinstance(X, pd.DataFrame):
+        feature_names = X.columns
     else:
-        relation = "has no clear effect on"
+        feature_names = [f"x{i}" for i in range(X.shape[1])]
+        X = pd.DataFrame(X, columns=feature_names)
 
-    print(f"\n✅ Interpretation: Increasing {treatment} appears to {relation} {outcome}, on average, when controlling for:")
-    print(", ".join(controls))
-    
-    # Optional: Refute estimate
-    try:
-        refute = model.refute_estimate(
-            identified_estimand,
-            estimate,
-            method_name="random_common_cause"
-        )
-        print("\n🧪 Refutation Test (Random Common Cause):")
-        print(refute)
-    except Exception as e:
-        print("⚠️ Refutation test failed:", e)
+    y_name = y.name if hasattr(y, "name") else "target"
+    y = pd.Series(y, name=y_name)
+
+    # Default model
+    if model is None:
+        model = LinearRegression()
+
+    # Log transform target
+    y_transformed = np.log1p(y) if log_y else y.copy()
+
+    # Log transform selected features
+    if len(log_feature_col) > 0:
+        dataframe, _ = safe_log1p_transform(df=dataframe, columns=log_feature_col,
+                                            suffix=log_suffix, drop_original_columns=drop_columns_after_log)
+        X = dataframe.drop(y_name, axis = 1)  # Update X from transformed DataFrame
+        feature_names = X.columns
+
+    # Optional feature selection
+    feature_scores_df = pd.DataFrame()
+    if remove_irrelevant_features:
+        print(f"\n🔎 Running SelectFpr with alpha={fpr_threshold}")
+        fpr_selector = SelectFpr(score_func=f_regression, alpha=fpr_threshold)
+        fpr_selector.fit(X, y_transformed)
+        mask = fpr_selector.get_support()
+        if mask.sum() == 0 or use_selectkbest:
+            print(f"⚠️ No features passed FPR threshold. Falling back to top {fallback_k} with SelectKBest.")
+            kbest_selector = SelectKBest(score_func=f_regression, k=min(fallback_k, X.shape[1]))
+            kbest_selector.fit(X, y_transformed)
+            mask = kbest_selector.get_support()
+            scores = kbest_selector.scores_
+            p_values = [np.nan] * len(scores)
+            selector_name = "SelectKBest"
+        else:
+            scores = fpr_selector.scores_
+            p_values = fpr_selector.pvalues_
+            selector_name = "SelectFpr"
+
+        selected_features = X.columns[mask]
+        removed_features = X.columns[~mask]
+        print(f"✅ {len(selected_features)} features selected using {selector_name}: {selected_features.tolist()}")
+        if len(removed_features) > 0:
+            print(f"🧹 Removed features: {removed_features.tolist()}")
+
+        feature_scores_df = pd.DataFrame({
+            "feature": feature_names,
+            "score": scores,
+            "p_value": p_values,
+            "selected": mask
+        }).sort_values(by="score", ascending=False)
+
+        X = X.loc[:, mask]
+        feature_names = X.columns
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y_transformed, test_size=test_size, random_state=random_state
+    )
+
+    # Prepare pipeline if standardizing
+    if standardize:
+        pipeline = make_pipeline(StandardScaler(), model)
+    else:
+        pipeline = model
+
+    # Fit pipeline
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
+
+    # Bias correction if log_y
+    if log_y or already_logged_y:
+        residuals_log = y_test - y_pred
+        sigma2 = np.var(residuals_log)
+        y_pred_corrected = np.expm1(y_pred + 0.5 * sigma2)
+        y_test_eval = np.expm1(y_test)
+        y_pred_eval = y_pred_corrected
+        print(f"\n🧪 Bias Correction Applied: Mean Shift = {(y_pred_corrected - np.expm1(y_pred)).mean():.4f}")
+    else:
+        y_test_eval = y_test
+        y_pred_eval = y_pred
+
+    # Evaluation metrics
+    r2 = r2_score(y_test_eval, y_pred_eval)
+    mse = mean_squared_error(y_test_eval, y_pred_eval)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_test_eval, y_pred_eval)
+
+    print(f"\n📊 {model_name} Evaluation Metrics:")
+    print(f"R²:   {r2:.4f}")
+    print(f"MAE:  {mae:.4f}")
+    print(f"MSE:  {mse:.4f}")
+    print(f"RMSE: {rmse:.4f}")
+
+    # Cross-validation with same pipeline
+    kf = KFold(n_splits=cv_folds, shuffle=True, random_state=random_state)
+    cv_scores = cross_val_score(pipeline, X, y_transformed, cv=kf, scoring='r2')
+    print(f"\n🔁 {cv_folds}-Fold CV R² Scores: {cv_scores}")
+    print(f"✅ CV Mean R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+
+    # Coefficients or importances
+    model_used = pipeline.named_steps[model.__class__.__name__.lower()] if standardize else model
+    coef_df = pd.DataFrame()
+    if hasattr(model_used, "coef_"):
+        coef_df = pd.DataFrame({
+            "feature": feature_names,
+            "coefficient": model_used.coef_
+        }).sort_values(by="coefficient", key=abs, ascending=False)
+        print("\n🧠 Feature Coefficients:")
+        print(coef_df)
+    elif hasattr(model_used, "feature_importances_"):
+        coef_df = pd.DataFrame({
+            "feature": feature_names,
+            "importance": model_used.feature_importances_
+        }).sort_values(by="importance", ascending=False)
+        print("\n🌲 Feature Importances:")
+        print(coef_df)
+    else:
+        print("\nℹ️ This model does not expose feature coefficients/importances.")
+
+    # Export model
+    if export_path:
+        if export_path.endswith(".joblib"):
+            joblib.dump(pipeline, export_path)
+            print(f"💾 Model saved to {export_path} (joblib)")
+        elif export_path.endswith(".pkl"):
+            with open(export_path, "wb") as f:
+                pickle.dump(pipeline, f)
+            print(f"💾 Model saved to {export_path} (pickle)")
+        else:
+            print("⚠️ export_path must end with .joblib or .pkl")
+
+    # Save predictions
+    if prediction_csv_path:
+        pred_df = pd.DataFrame({
+            "actual": y_test_eval,
+            "predicted": y_pred_eval
+        })
+        pred_df.to_csv(prediction_csv_path, index=False)
+        print(f"📁 Predictions saved to {prediction_csv_path}")
+
+    # Plotting
+    if plot:
+        residuals = y_test_eval - y_pred_eval
+        plt.figure(figsize=(12, 5))
+
+        plt.subplot(1, 2, 1)
+        sns.histplot(residuals, kde=True, bins=30)
+        plt.title("Residual Distribution")
+
+        plt.subplot(1, 2, 2)
+        sns.scatterplot(x=y_test_eval, y=y_pred_eval)
+        plt.plot([y_test_eval.min(), y_test_eval.max()],
+                 [y_test_eval.min(), y_test_eval.max()], 'r--')
+        plt.title("Actual vs Predicted")
+        plt.xlabel("Actual")
+        plt.ylabel("Predicted")
+        plt.tight_layout()
+        plt.show()
+
+    # Output
+    metrics = {
+        "r2": r2,
+        "mae": mae,
+        "mse": mse,
+        "rmse": rmse,
+        "cv_mean_r2": cv_scores.mean(),
+        "cv_std_r2": cv_scores.std()
+    }
+    data_output = {"X_train": X_train, "X_test": X_test, "y_train": y_train, "y_test": y_test}
+
+    return (pipeline, coef_df, metrics, feature_scores_df, data_output) if return_metrics else (pipeline, coef_df, data_output)
+
+
+
+def one_hot_encode_with_rare_grouping(df, columns, threshold=0.01, drop_first=True):
+    """
+    Groups rare categories into 'Other' for the specified columns and applies one-hot encoding.
+
+    Parameters:
+    - df (pd.DataFrame): The input dataframe
+    - columns (list): List of column names to encode
+    - threshold (float): Minimum proportion to not be considered 'rare'
+    - drop_first (bool): Whether to drop the first dummy column to avoid multicollinearity
+
+    Returns:
+    - pd.DataFrame: Transformed dataframe with one-hot encoded columns
+    """
+    df = df.copy()
+
+    for col in columns:
+        # Group rare categories into 'Other'
+        freq = df[col].value_counts(normalize=True)
+        rare_categories = freq[freq < threshold].index
+        df[col] = df[col].apply(lambda x: 'Other' if x in rare_categories else x)
+
+    # Perform one-hot encoding
+    df = pd.get_dummies(df, columns=columns, drop_first=drop_first, dtype = int)
+
+    return df

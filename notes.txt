@@ -99,7 +99,8 @@ You'll be working under similar constraints to what you'd encounter at an early-
     
     
     No null values in the dataset across the rows and columns.
-    No duplicates found in the dataset.
+    No duplicates found initially in the dataset.
+    122 duplicates found after first phase of data preprocessing.
     No data entry issues.
     Turnover, Number of Employees, Emissions t CO2e, Initiative Carbon Savings t CO2e, Initiative Financial Savings GDP, and Initiative Capex GDP distributions are all highly left-skewed. 
     Emissions_t_CO2e is highly overall correlated with Employees and Turnover.
@@ -168,15 +169,8 @@ Key Takeaways for Stakeholders
             1) Correlation & Causation - It doesn't prove that turnover causes emissions or vice versa.
             2) Industry Context Matters - Manufacturing, logistics, and energy sectors naturally emit more COтВВ than software or consulting тАФ regardless of revenue.
             3) Check for Outliers - A few very large firms can skew correlation so consider using log-transformed data.
-    - Causal Inference between EMPLOYEES and EMISSIONS_t_CO2e.
-            This answers: Are companies with more employees really polluting more, or is that just because they're richer?тАЭ
-    - Causal Inference between TURNOVER and EMPLOYEES.
-            This answers: Does higher company revenue (turnover) cause a company to hire more people
-    - Causal Inference between TURNOVER and EMISSIONS_t_CO2e. 
-            This answers: What would emissions be if turnover were hypothetically changed (intervened on)?
-            This answers: If SMBs grow financially, do emissions grow linearly or can clean growth be incentivized?
-    - Create a Predictive Model for Initiative Carbon Savings tCO2e (---)
-    - Create a Predictive Model for Initiative Financial Savings GDP (---)
+    - Create a Predictive Model for Initiative Carbon Savings tCO2e (---) (SPEAK ABOUT THE MOST IMPORTANT FEATURES GOTTEN FROM YOUR MODEL)
+    - Create a Predictive Model for Initiative Financial Savings GDP (---) (SPEAK ABOUT THE MOST IMPORTANT FEATURES GOTTEN FROM YOUR MODEL)
     - Will any of these analysis change if we switched the analysis to specific groupings
               EXAMPLE: Industry, Sector, Geography.
  
