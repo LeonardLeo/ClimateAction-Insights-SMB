@@ -53,7 +53,7 @@
 
 ## 📌 Power BI Dashboard
 
-🔗 **[https://app.powerbi.com/view?r=eyJrIjoiZGYxMThkYmEtOWY4NS00NWEyLWJjM2EtM2NhN2Y1YzJjZDNlIiwidCI6IjY2NjYxMWFjLTE1NjktNDhjYy1iYjg5LWY2MjZkY2JmMjkxMSJ9&embedImagePlaceholder=true&pageName=0de1aa8aaa5d2237e1bb]**
+🔗 [PowerBI Dashboard](https://app.powerbi.com/view?r=eyJrIjoiZGYxMThkYmEtOWY4NS00NWEyLWJjM2EtM2NhN2Y1YzJjZDNlIiwidCI6IjY2NjYxMWFjLTE1NjktNDhjYy1iYjg5LWY2MjZkY2JmMjkxMSJ9&embedImagePlaceholder=true&pageName=0de1aa8aaa5d2237e1bb)
 
 ---
 
