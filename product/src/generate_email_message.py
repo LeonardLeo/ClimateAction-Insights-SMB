@@ -3,6 +3,7 @@
 # =============================================================================
 import pandas as pd
 import warnings
+import argparse
 from recommend_initiatives import recommend_initiatives
 
 # =============================================================================
@@ -144,14 +145,40 @@ lonyiriuba@xcdclimateai.com
     return email
 
 
-# ---------------------------------------
-# Example use case for function
-smb_profile = {
-    'company_name': 'A&E Limited',
-    'industry_name': 'H: TRANSPORTATION AND STORAGE',
-    'geography_name': 'Vale of White Horse',
-    'employees': 50,
-    'turnover': 3_000_000,  # GBP
-    'emissions_t_CO2e': 100
-}
-email = generate_cold_email(profile = smb_profile)
+# =============================================================================
+# Main
+# =============================================================================
+def main():
+    parser = argparse.ArgumentParser(description="Generate a cold outreach email for a given SMB profile.")
+    parser.add_argument("--company_name", type=str, required=True)
+    parser.add_argument("--industry_name", type=str, required=True)
+    parser.add_argument("--geography_name", type=str, required=True)
+    parser.add_argument("--employees", type=int, required=True)
+    parser.add_argument("--turnover", type=float, required=True)
+    parser.add_argument("--emissions_t_CO2e", type=float, required=True)
+    parser.add_argument("--output", type=str, default="output_email.txt", help="Path to output file")
+
+    args = parser.parse_args()
+
+    profile = {
+        "company_name": args.company_name,
+        "industry_name": args.industry_name,
+        "geography_name": args.geography_name,
+        "employees": args.employees,
+        "turnover": args.turnover,
+        "emissions_t_CO2e": args.emissions_t_CO2e
+    }
+
+    email_text = generate_cold_email(profile)
+
+    # Print to console
+    print("\n" + "="*80)
+    print("GENERATED EMAIL\n")
+    print(email_text)
+    print("="*80 + "\n")
+
+    # Write to file
+    with open(args.output, "w", encoding="utf-8") as f:
+        f.write(email_text)
+    print(f"✅ Email written to {args.output}")
+
