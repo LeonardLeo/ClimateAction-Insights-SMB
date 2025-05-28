@@ -145,6 +145,20 @@ lonyiriuba@xcdclimateai.com
     return email
 
 
+# # ---------------------------------------
+# # Example use case for function
+
+# smb_profile = {
+#     'company_name': 'A&E Limited',
+#     'industry_name': 'F: CONSTRUCTION',
+#     'geography_name': 'Vale of White Horse',
+#     'employees': 50,
+#     'turnover': 3_000_000,  # GBP
+#     'emissions_t_CO2e': 100
+# }
+# email = generate_cold_email(profile = smb_profile)
+
+
 # =============================================================================
 # Main
 # =============================================================================
